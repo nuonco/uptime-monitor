@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Uptime Monitor</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            .header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 20px 0;
+            }
+            h1 {
+                color: #333;
+                margin: 0;
+            }
+            .site {
+                margin: 20px 0;
+                padding: 15px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: flex;
+                gap: 20px;
+            }
+            .screenshot {
+                width: 480px;
+                height: 270px;
+                object-fit: cover;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                flex-shrink: 0;
+            }
+            .site-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-width: 0;
+            }
+            .site-url {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 1;
+            }
+            .site h3 {
+                margin: 0;
+                color: #2563eb;
+                word-break: break-all;
+                text-align: center;
+            }
+            .checks-container {
+                position: relative;
+                margin-top: 10px;
+            }
+            .checks {
+                display: flex;
+                justify-content: flex-end;
+                gap: 2px;
+                height: 40px;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            .check {
+                width: 9.2px;
+                cursor: pointer;
+            }
+            .check[title] {
+                position: relative;
+            }
+            .check[title]:hover::after {
+                content: attr(title);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 4px;
+                white-space: nowrap;
+                font-size: 12px;
+                z-index: 1000;
+                margin-bottom: 5px;
+                pointer-events: none;
+            }
+            .timestamps {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 5px;
+                font-size: 11px;
+                color: #666;
+            }
+            .timestamp {
+                text-align: right;
+            }
+            .up {
+                background: #22c55e;
+            }
+            .down {
+                background: #ef4444;
+            }
+            form {
+                padding: 20px;
+                background: white;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            input[type="text"] {
+                padding: 10px;
+                width: 400px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            button {
+                padding: 10px 20px;
+                background: #2563eb;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                margin-left: 10px;
+            }
+            button:hover {
+                background: #1d4ed8;
+            }
+            .empty {
+                text-align: center;
+                color: #666;
+                padding: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header-container">
+            <h1>Uptime Monitor</h1>
+            <form id="addSiteForm">
+                <input
+                    type="text"
+                    id="urlInput"
+                    name="url"
+                    placeholder="https://example.com"
+                    required
+                />
+                <button type="submit">Add Site</button>
+            </form>
+        </div>
+
+        <div id="sites">Loading...</div>
+
+        <script>
+            const API_URL = "/api";
+
+            async function loadSites() {
+                try {
+                    const sitesResp = await fetch(`${API_URL}/sites`);
+                    const sites = await sitesResp.json();
+
+                    if (sites.length === 0) {
+                        document.getElementById("sites").innerHTML =
+                            '<p class="empty">No sites added yet. Add one above to start monitoring!</p>';
+                        return;
+                    }
+
+                    const sitesHtml = await Promise.all(
+                        sites.map(async (site) => {
+                            const checksResp = await fetch(
+                                `${API_URL}/sites/${site.id}/healthchecks?limit=60`,
+                            );
+                            const checks = await checksResp.json();
+                            checks.reverse();
+
+                            const bars = checks
+                                .map((check) => {
+                                    const timestamp = new Date(
+                                        check.created_at,
+                                    ).toLocaleString();
+                                    return `<div class="check ${check.is_up ? "up" : "down"}" title="${timestamp}"></div>`;
+                                })
+                                .join("");
+
+                            // Add latest timestamp
+                            let timestamps = "";
+                            if (checks.length > 0) {
+                                // Show only the latest check timestamp
+                                const latestCheck = checks[checks.length - 1];
+                                const time = new Date(latestCheck.created_at);
+                                const timeStr = time.toLocaleTimeString(
+                                    "en-US",
+                                    {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        second: "2-digit",
+                                        hour12: false,
+                                    },
+                                );
+                                timestamps = `<div class="timestamps"><span class="timestamp">${timeStr}</span></div>`;
+                            }
+
+                            const screenshot = site.screenshot
+                                ? `<img src="${API_URL}${site.screenshot}" class="screenshot" alt="Screenshot">`
+                                : "";
+
+                            return `
+                        <div class="site">
+                            ${screenshot}
+                            <div class="site-content">
+                                <div class="site-url">
+                                    <h3>${site.url}</h3>
+                                </div>
+                                <div class="checks-container">
+                                    <div class="checks">${bars || '<div style="color: #999;">Waiting for first check...</div>'}</div>
+                                    ${timestamps}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                        }),
+                    );
+
+                    document.getElementById("sites").innerHTML =
+                        sitesHtml.join("");
+                } catch (error) {
+                    console.error("Error loading sites:", error);
+                    document.getElementById("sites").innerHTML =
+                        '<p class="empty">Error loading sites</p>';
+                }
+            }
+
+            document
+                .getElementById("addSiteForm")
+                .addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const url = document.getElementById("urlInput").value;
+
+                    try {
+                        await fetch(`${API_URL}/sites`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                url: url,
+                                screenshot: "",
+                            }),
+                        });
+                        document.getElementById("urlInput").value = "";
+                        loadSites();
+                    } catch (error) {
+                        console.error("Error adding site:", error);
+                        alert("Error adding site");
+                    }
+                });
+
+            // Load sites on page load
+            loadSites();
+
+            // Reload sites every 5 seconds
+            setInterval(loadSites, 5000);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,16 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=terraform
+name              = "rds"
+type              = "terraform_module"
+terraform_version = "1.11.4"
+
+[public_repo]
+repo      = "nuonco/uptime-monitor"
+directory = "nuon/uptime-monitor/components/1-rds"
+branch    = "main"
+
+[vars]
+region                  = "{{ .nuon.install_stack.outputs.region }}"
+install_id              = "{{ .nuon.install.id }}"
+vpc_id                  = "{{ .nuon.install.sandbox.outputs.vpc.id }}"
+private_subnet_ids      = "{{ .nuon.install.sandbox.outputs.vpc.private_subnet_ids }}"
+node_security_group_id  = "{{ .nuon.install.sandbox.outputs.cluster.node_security_group_id }}"

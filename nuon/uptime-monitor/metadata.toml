@@ -1,0 +1,5 @@
+version = "v1"
+
+display_name = "Uptime"
+description  = "A demo uptime monitoring service."
+readme       = "./README.md"

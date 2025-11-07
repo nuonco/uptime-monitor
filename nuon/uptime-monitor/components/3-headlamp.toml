@@ -1,0 +1,21 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=helm
+name       = "headlamp"
+type       = "helm_chart"
+chart_name = "headlamp"
+namespace  = "headlamp"
+
+[public_repo]
+repo = "kubernetes-sigs/headlamp"
+directory = "charts/headlamp"
+branch = "main"
+
+[values]
+"replicaCount"                                       = "1"
+"ingress.enabled"                                    = "true"
+"ingress.className"                                  = "nginx"
+"ingress.hosts[0].host"                              = "headlamp.{{ .nuon.install.public_domain }}"
+"ingress.hosts[0].paths[0].path"                     = "/"
+"ingress.hosts[0].paths[0].pathType"                 = "Prefix"
+"ingress.annotations.cert-manager\\.io/cluster-issuer" = "letsencrypt-prod"
+"ingress.tls[0].secretName"                          = "headlamp-tls"
+"ingress.tls[0].hosts[0]"                            = "headlamp.{{ .nuon.install.public_domain }}"

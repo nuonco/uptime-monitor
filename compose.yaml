@@ -1,0 +1,81 @@
+services:
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    volumes:
+      - ./ui/index.html:/usr/share/nginx/html/index.html
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - localstack
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=uptime
+      - DB_USER=uptime
+      - DB_PASSWORD=password
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=nuon-uptime-monitor
+    volumes:
+      - ./api:/app
+      - /app/.venv # don't write venv to host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/livez"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    environment:
+      POSTGRES_USER: uptime
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: uptime
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uptime -d uptime"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
+volumes:
+  postgres_data:
+  localstack_data:

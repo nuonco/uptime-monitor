@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uptime-monitor
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: uptime-secrets
+  namespace: uptime-monitor
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secretsmanager
+    kind: ClusterSecretStore
+  target:
+    name: uptime-secrets
+    creationPolicy: Owner
+  data:
+    - secretKey: db-password
+      remoteRef:
+        key: "{{ .nuon.components.rds.outputs.secret_name }}"
+    - secretKey: access-key-secret
+      remoteRef:
+        key: "{{ .nuon.components.s3.outputs.access_key_secret_name }}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: uptime-monitor
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .nuon.components.api_image.image.repository.uri }}:{{ .nuon.components.api_image.image.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: "{{ .nuon.components.rds.outputs.db_host }}"
+            - name: DB_PORT
+              value: "{{ .nuon.components.rds.outputs.db_port }}"
+            - name: DB_NAME
+              value: "{{ .nuon.components.rds.outputs.db_name }}"
+            - name: DB_USER
+              value: "{{ .nuon.components.rds.outputs.db_username }}"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: uptime-secrets
+                  key: db-password
+            - name: CHECK_INTERVAL
+              value: "5"
+            - name: AWS_REGION
+              value: "{{ .nuon.install_stack.outputs.region }}"
+            - name: S3_BUCKET_NAME
+              value: "{{ .nuon.components.s3.outputs.bucket_name }}"
+            - name: AWS_ACCESS_KEY_ID
+              value: "{{ .nuon.components.s3.outputs.access_key_id }}"
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: uptime-secrets
+                  key: access-key-secret
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /livez
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: uptime-monitor
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: api

@@ -1,0 +1,6 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=kubernetes_manifests
+name      = "ui"
+type      = "kubernetes_manifest"
+dependencies = ["ui_image", "api"]
+namespace = "uptime-monitor"
+manifest = "./2-ui/manifest.yaml"
