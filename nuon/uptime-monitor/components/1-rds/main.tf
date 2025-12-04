@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.67.0"
+      version = "~> 6.27.0"
     }
   }
 }
@@ -32,8 +32,8 @@ variable "vpc_id" {
 }
 
 variable "private_subnet_ids" {
-  type        = list(string)
-  description = "Private subnet IDs from the sandbox stack"
+  type        = string
+  description = "Comma-delimited string of private subnet IDs from the sandbox stack"
 }
 
 variable "node_security_group_id" {
@@ -55,13 +55,6 @@ resource "aws_security_group" "postgres" {
     description     = "Allow PostgreSQL access from EKS nodes"
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = {
     Name = "${var.install_id}-postgres-sg"
   }
@@ -70,7 +63,7 @@ resource "aws_security_group" "postgres" {
 # RDS subnet group
 resource "aws_db_subnet_group" "postgres" {
   name_prefix = "${var.install_id}-postgres-"
-  subnet_ids  = var.private_subnet_ids
+  subnet_ids  = split(",", var.private_subnet_ids)
 
   tags = {
     Name = "${var.install_id}-postgres-subnet-group"
