@@ -3,12 +3,7 @@
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "iam:*",
-        "organizations:DescribeOrganization",
-        "ec2:*",
-        "ecr:*"
-      ],
+      "Action": "*",
       "Resource": "*"
     }
   ]

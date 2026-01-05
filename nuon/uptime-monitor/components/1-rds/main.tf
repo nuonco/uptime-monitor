@@ -73,7 +73,7 @@ resource "aws_db_subnet_group" "postgres" {
 # Generate random password for PostgreSQL
 resource "random_password" "postgres" {
   length  = 32
-  special = true
+  special = false
 }
 
 # Store password in AWS Secrets Manager
