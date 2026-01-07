@@ -111,7 +111,8 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids = [aws_security_group.postgres.id]
   publicly_accessible    = false
 
-  deletion_protection = true
+  deletion_protection = false
+  skip_final_snapshot = true
 
   tags = {
     Name = "${var.install_id}-postgres"
