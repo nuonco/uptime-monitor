@@ -1,8 +1,9 @@
 #:schema https://api.nuon.co/v1/general/config-schema?type=helm
-name       = "headlamp"
-type       = "helm_chart"
-chart_name = "headlamp"
-namespace  = "headlamp"
+name         = "headlamp"
+type         = "helm_chart"
+chart_name   = "headlamp"
+namespace    = "headlamp"
+dependencies = ["headlamp_rbac"]
 
 [public_repo]
 repo = "kubernetes-sigs/headlamp"
@@ -10,7 +11,10 @@ directory = "charts/headlamp"
 branch = "main"
 
 [values]
-"replicaCount"                  = "1"
-"ingress.enabled"               = "false"
-"config.oidc.secret.create"     = "false"
+"replicaCount"                       = "1"
+"ingress.enabled"                    = "false"
+"config.oidc.secret.create"          = "false"
 "config.oidc.externalSecret.enabled" = "false"
+"clusterRoleBinding.create"          = "false"
+"serviceAccount.create"              = "false"
+"serviceAccount.name"                = "headlamp"
