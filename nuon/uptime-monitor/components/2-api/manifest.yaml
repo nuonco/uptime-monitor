@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: "{{ .nuon.components.api_image.image.repository.uri }}:{{ .nuon.components.api_image.image.tag }}"
+          image: "{{ .nuon.components.api_image.outputs.image.repository }}:{{ .nuon.components.api_image.outputs.image.tag }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
