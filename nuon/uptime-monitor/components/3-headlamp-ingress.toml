@@ -5,4 +5,4 @@ namespace = "headlamp"
 
 dependencies = ["tailscale_operator", "headlamp"]
 
-manifest = "./4-headlamp-ingress/manifest.yaml"
+manifest = "./3-headlamp-ingress/manifest.yaml"
