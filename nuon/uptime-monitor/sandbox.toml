@@ -8,7 +8,7 @@ directory = "."
 
 [vars]
 cluster_version = "1.33"
-cluster_name    = "uptime-{{.nuon.install.id}}"
+cluster_name    = "{{.nuon.install.id}}"
 
 enable_nuon_dns      = "true"
 public_root_domain   = "{{.nuon.install.id}}.nuon.run"
