@@ -51,28 +51,3 @@ spec:
       targetPort: 80
   selector:
     app: ui
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: uptime-monitor
-  namespace: uptime-monitor
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - "{{ .nuon.install.sandbox.outputs.nuon_dns.public_domain.name }}"
-      secretName: uptime-tls
-  rules:
-    - host: "{{ .nuon.install.sandbox.outputs.nuon_dns.public_domain.name }}"
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: ui
-                port:
-                  number: 80
