@@ -3,6 +3,6 @@ name      = "headlamp_ingress"
 type      = "kubernetes_manifest"
 namespace = "headlamp"
 
-dependencies = ["tailscale_operator", "headlamp"]
+dependencies = ["tailscale_proxy", "headlamp"]
 
 manifest = "./3-headlamp-ingress/manifest.yaml"

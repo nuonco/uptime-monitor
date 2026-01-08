@@ -1,10 +1,16 @@
-apiVersion: tailscale.com/v1alpha1
+---
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: headlamp
+  name: "headlamp-{{.nuon.install.id}}"
   namespace: headlamp
+  labels:
+    app.nuon.co/name: headlamp
 spec:
   ingressClassName: tailscale
+  tls:
+    - hosts:
+        - "headlamp-{{.nuon.install.id}}"
   rules:
     - http:
         paths:
