@@ -1,6 +1,6 @@
 # Uptime Monitor 
 
-Click [here](http://{{.nuon.components.ec2.outputs.public_ip}}) to see your instance.
+Click [here](https://{{.nuon.install.sandbox.outputs.nuon_dns.public_domain.name}}) to see your instance.
 
 ## Full State
 
