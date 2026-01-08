@@ -4,7 +4,7 @@ metadata:
   name: ui
   namespace: uptime-monitor
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: ui
