@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     DB_USER: str = ""
     DB_PASSWORD: str = ""
     CHECK_INTERVAL: int = 5
-    AWS_ACCESS_KEY_ID: str = ""
-    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_ACCESS_KEY_ID: str | None = None  # Optional, for local dev with localstack
+    AWS_SECRET_ACCESS_KEY: str | None = None  # Optional, for local dev with localstack
     AWS_ENDPOINT_URL: str = ""
     AWS_REGION: str = ""
     S3_BUCKET_NAME: str = ""
@@ -39,6 +39,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Initialize S3 client
+# Uses explicit credentials for local dev (localstack), IRSA credentials in EKS
 s3_client = boto3.client(
     "s3",
     endpoint_url=settings.AWS_ENDPOINT_URL or None,

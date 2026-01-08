@@ -1,0 +1,44 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=action
+name    = "rds_creds"
+timeout = "1m"
+
+[[triggers]]
+type           = "post-deploy-component"
+component_name = "rds"
+
+[[triggers]]
+type = "manual"
+
+[[steps]]
+name = "Copy RDS Secret"
+inline_contents = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[rds-secrets] reading db access secrets from AWS Secrets Manager"
+secret=$(aws --region "$REGION" secretsmanager get-secret-value --secret-id="$SECRET_ARN")
+username=$(echo "$secret" | jq -r '.SecretString' | jq -r '.username')
+password=$(echo "$secret" | jq -r '.SecretString' | jq -r '.password')
+
+echo "[rds-secrets] creating RDS access secret"
+kubectl create -n "$TARGET_NAMESPACE" secret generic "$TARGET_NAME" \
+  --save-config    \
+  --dry-run=client \
+  --from-literal=username="$username" \
+  --from-literal=password="$password" \
+  --from-literal=host="$DB_ADDRESS" \
+  --from-literal=port="$DB_PORT" \
+  --from-literal=database="$DB_NAME" \
+  -o yaml | kubectl apply -f -
+
+echo "[rds-secrets] secret created successfully"
+"""
+
+[steps.env_vars]
+SECRET_ARN       = "{{ .nuon.components.rds.outputs.master_user_secret_arn }}"
+REGION           = "{{ .nuon.install_stack.outputs.region }}"
+TARGET_NAME      = "db-credentials"
+TARGET_NAMESPACE = "uptime-monitor"
+DB_ADDRESS       = "{{ .nuon.components.rds.outputs.db_host }}"
+DB_PORT          = "{{ .nuon.components.rds.outputs.db_port }}"
+DB_NAME          = "{{ .nuon.components.rds.outputs.db_name }}"

@@ -70,27 +70,6 @@ resource "aws_db_subnet_group" "postgres" {
   }
 }
 
-# Generate random password for PostgreSQL
-resource "random_password" "postgres" {
-  length  = 32
-  special = false
-}
-
-# Store password in AWS Secrets Manager
-resource "aws_secretsmanager_secret" "postgres_password" {
-  name_prefix = "${var.install_id}-postgres-password-"
-  description = "PostgreSQL database password for ${var.install_id}"
-
-  tags = {
-    Name = "${var.install_id}-postgres-password"
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "postgres_password" {
-  secret_id     = aws_secretsmanager_secret.postgres_password.id
-  secret_string = random_password.postgres.result
-}
-
 # RDS PostgreSQL instance
 resource "aws_db_instance" "postgres" {
   identifier_prefix = "${var.install_id}-postgres-"
@@ -105,7 +84,9 @@ resource "aws_db_instance" "postgres" {
 
   db_name  = "uptime_monitor"
   username = "uptime_monitor"
-  password = random_password.postgres.result
+
+  # AWS manages password in Secrets Manager
+  manage_master_user_password = true
 
   db_subnet_group_name   = aws_db_subnet_group.postgres.name
   vpc_security_group_ids = [aws_security_group.postgres.id]
@@ -140,7 +121,7 @@ output "db_username" {
   description = "PostgreSQL database username"
 }
 
-output "secret_name" {
-  value       = aws_secretsmanager_secret.postgres_password.name
-  description = "Name of the Secrets Manager secret containing the database password"
+output "master_user_secret_arn" {
+  value       = aws_db_instance.postgres.master_user_secret[0].secret_arn
+  description = "ARN of the Secrets Manager secret containing username/password"
 }
