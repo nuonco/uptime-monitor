@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "trust_policy" {
     condition {
       test     = "StringEquals"
       variable = "${var.cluster_oidc_provider}:sub"
-      values   = ["system:serviceaccount:uptime-monitor:api"]
+      values   = ["system:serviceaccount:default:api"]
     }
   }
 }

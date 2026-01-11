@@ -2,5 +2,5 @@
 name      = "ui"
 type      = "kubernetes_manifest"
 dependencies = ["ui_image", "api"]
-namespace = "uptime-monitor"
+namespace = "default"
 manifest = "./2-ui/manifest.yaml"

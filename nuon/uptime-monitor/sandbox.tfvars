@@ -13,11 +13,7 @@ maintenance_role_eks_access_entry_policy_associations = {
   }
 }
 
-additional_namespaces = [
-  "tailscale",
-  "headlamp",
-  "uptime-monitor",
-]
+additional_namespaces = []
 
 additional_tags = {
   "app.nuon.co/name" : "uptime-monitor"

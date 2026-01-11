@@ -3,16 +3,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: alb
-  namespace: uptime-monitor
+  namespace: default
   labels:
-    app.nuon.co/install: { { .nuon.install.id } }
+    app.nuon.co/install: "{{ .nuon.install.id }}"
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/healthcheck-path: "/"
-    external-dns.alpha.kubernetes.io/hostname:
-      { { .nuon.install.sandbox.outputs.nuon_dns.public_domain.name } }
+    external-dns.alpha.kubernetes.io/hostname: "{{ .nuon.install.sandbox.outputs.nuon_dns.public_domain.name }}"
 spec:
   ingressClassName: alb
   rules:

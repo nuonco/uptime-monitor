@@ -2,5 +2,5 @@
 name      = "api"
 type      = "kubernetes_manifest"
 dependencies = ["api_image", "rds", "s3"]
-namespace = "uptime-monitor"
+namespace = "default"
 manifest = "./2-api/manifest.yaml"

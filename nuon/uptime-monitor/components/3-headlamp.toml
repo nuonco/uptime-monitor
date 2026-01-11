@@ -2,7 +2,7 @@
 name       = "headlamp"
 type       = "helm_chart"
 chart_name = "headlamp"
-namespace  = "headlamp"
+namespace  = "default"
 
 [public_repo]
 repo = "kubernetes-sigs/headlamp"
