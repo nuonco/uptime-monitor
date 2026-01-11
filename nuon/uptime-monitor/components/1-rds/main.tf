@@ -41,6 +41,11 @@ variable "node_security_group_id" {
   description = "EKS node security group ID from the sandbox stack"
 }
 
+# Get VPC CIDR block
+data "aws_vpc" "vpc" {
+  id = var.vpc_id
+}
+
 # Security group for RDS
 resource "aws_security_group" "postgres" {
   name_prefix = "${var.install_id}-postgres-"
@@ -48,11 +53,11 @@ resource "aws_security_group" "postgres" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [var.node_security_group_id]
-    description     = "Allow PostgreSQL access from EKS nodes"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_vpc.vpc.cidr_block]
+    description = "Allow PostgreSQL access from within VPC"
   }
 
   tags = {
