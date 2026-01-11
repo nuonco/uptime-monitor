@@ -1,21 +1,8 @@
-# helm
+#:schema https://api.nuon.co/v1/general/config-schema?type=kubernetes_manifests
+name      = "application_load_balancer"
+type      = "kubernetes_manifest"
+namespace = "uptime-monitor"
 
-name         = "application_load_balancer"
-type         = "helm_chart"
-chart_name   = "application-load-balancer"
-dependencies = ["ui"]
+dependencies = ["ui", "headlamp"]
 
-[public_repo]
-repo      = "nuonco/uptime-monitor"
-directory = "nuon/uptime-monitor/components/4-alb"
-branch    = "main"
-
-[values]
-domain_certificate = "{{.nuon.components.certificate.outputs.public_domain_certificate_arn}}"
-domain             = "{{.nuon.install.sandbox.outputs.nuon_dns.public_domain.name}}"
-https_port         = "443"
-service_name       = "ui"
-service_port       = "80"
-install_name       = "{{.nuon.install.id}}"
-namespace          = "uptime-monitor"
-healthcheck_path   = "/"
+manifest = "./4-alb/manifest.yaml"

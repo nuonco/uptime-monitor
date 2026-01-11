@@ -66,12 +66,6 @@ spec:
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /livez
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
           resources:
             limits:
               cpu: 1000m

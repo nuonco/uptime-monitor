@@ -1,8 +1,0 @@
-#:schema https://api.nuon.co/v1/general/config-schema?type=kubernetes_manifests
-name      = "headlamp_ingress"
-type      = "kubernetes_manifest"
-namespace = "headlamp"
-
-dependencies = ["tailscale_proxy", "headlamp"]
-
-manifest = "./3-headlamp-ingress/manifest.yaml"

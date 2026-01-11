@@ -25,12 +25,6 @@ spec:
               port: 80
             initialDelaySeconds: 10
             periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 5
-            periodSeconds: 5
           resources:
             limits:
               cpu: 100m

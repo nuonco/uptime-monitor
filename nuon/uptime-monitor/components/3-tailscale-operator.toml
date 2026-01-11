@@ -1,8 +1,0 @@
-#:schema https://api.nuon.co/v1/general/config-schema?type=kubernetes_manifests
-name      = "tailscale_operator"
-type      = "kubernetes_manifest"
-namespace = "tailscale"
-
-dependencies = ["img_tailscale_operator"]
-
-manifest = "./3-tailscale-operator/manifest.yaml"

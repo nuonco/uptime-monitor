@@ -6,7 +6,7 @@ Stack:
 * uv
 * FastAPI
 * PostgreSQL
-* HTMX
+* Vanilla JS
 
 You should be able to enter a website URL. The system should periodically check the website's uptime 
 and store the results in a PostgreSQL database. We poll every 5 seconds. We should be able to view
