@@ -12,35 +12,26 @@ type = "manual"
 [[steps]]
 name = "create"
 inline_contents = """
-#!/usr/bin/env sh
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "[headlamp-token] Creating service account and token for Headlamp"
+echo "[headlamp-token] creating service account"
+kubectl create serviceaccount headlamp-admin -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-# Create the service account if it doesn't exist
-kubectl create serviceaccount headlamp-admin -n default --dry-run=client -o yaml | kubectl apply -f -
+echo "[headlamp-token] creating cluster role binding"
+kubectl create clusterrolebinding headlamp-admin \
+  --clusterrole=cluster-admin \
+  --serviceaccount="$NAMESPACE":headlamp-admin \
+  --dry-run=client -o yaml | kubectl apply -f -
 
-# Create cluster role binding for admin access
-cat <<EOF | kubectl apply -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: headlamp-admin
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: headlamp-admin
-  namespace: default
-EOF
+echo "[headlamp-token] generating token"
+TOKEN=$(kubectl create token headlamp-admin -n "$NAMESPACE" --duration=8760h)
 
-# Generate a long-lived token (1 year)
-TOKEN=$(kubectl create token headlamp-admin -n default --duration=8760h)
+echo "[headlamp-token] writing output"
+printf '{"token": "%s"}' "$TOKEN" >> $NUON_ACTIONS_OUTPUT_FILEPATH
 
-echo "[headlamp-token] Token created successfully"
-
-# Output for Nuon - write JSON to the output file
-echo "{\"token\": \"$TOKEN\"}" >> $NUON_ACTIONS_OUTPUT_FILEPATH
+echo "[headlamp-token] done"
 """
+
+[steps.env_vars]
+NAMESPACE = "default"
