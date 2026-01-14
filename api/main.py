@@ -203,6 +203,72 @@ def list_healthchecks(
     return instances
 
 
+@app.post("/create-drift")
+async def create_drift():
+    """Intentionally modify RDS instance to create infrastructure drift"""
+    try:
+        # Initialize RDS client
+        rds_client = boto3.client(
+            "rds",
+            region_name=settings.AWS_REGION,
+            endpoint_url=settings.AWS_ENDPOINT_URL or None,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
+        # Find the RDS instance by matching the DB host
+        response = rds_client.describe_db_instances()
+        instance = None
+        for db_instance in response["DBInstances"]:
+            if settings.DB_HOST in db_instance["Endpoint"]["Address"]:
+                instance = db_instance
+                break
+
+        if not instance:
+            return {
+                "status": "error",
+                "message": f"RDS instance not found for host: {settings.DB_HOST}",
+            }
+
+        instance_id = instance["DBInstanceIdentifier"]
+        current_storage = instance["AllocatedStorage"]
+        current_max_storage = instance.get("MaxAllocatedStorage", current_storage)
+        instance_arn = instance["DBInstanceArn"]
+
+        # Increment max allocated storage by 1 GB
+        new_max_storage = current_max_storage + 1
+        rds_client.modify_db_instance(
+            DBInstanceIdentifier=instance_id,
+            MaxAllocatedStorage=new_max_storage,
+            ApplyImmediately=True,
+        )
+
+        # Add drift tags
+        drift_timestamp = datetime.now(timezone.utc).isoformat()
+        rds_client.add_tags_to_resource(
+            ResourceName=instance_arn,
+            Tags=[
+                {"Key": "DriftTest", "Value": drift_timestamp},
+            ],
+        )
+
+        logging.info(f"Created drift on RDS instance {instance_id}")
+
+        return {
+            "status": "success",
+            "message": "Infrastructure drift created successfully",
+        }
+
+    except ClientError as e:
+        error_msg = f"AWS ClientError: {e.response['Error']['Message']}"
+        logging.error(error_msg)
+        return {"status": "error", "message": error_msg}
+    except Exception as e:
+        error_msg = f"Unexpected error: {str(e)}"
+        logging.exception("Failed to create drift")
+        return {"status": "error", "message": error_msg}
+
+
 # ============================================================================
 # Jobs
 # ============================================================================

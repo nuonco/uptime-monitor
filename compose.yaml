@@ -9,7 +9,7 @@ services:
     depends_on:
       - api
     volumes:
-      - ./ui/index.html:/usr/share/nginx/html/index.html
+      - ./ui/src:/usr/share/nginx/html
 
   api:
     build:
