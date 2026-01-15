@@ -170,7 +170,7 @@ class SiteCreate(Site, table=False):
     screenshot: str = sqlmodel.Field(default="", exclude=True)
 
 
-@app.post("/sites")
+@app.post("/sites", status_code=201)
 def create_site(
     session: SessionDep,
     input: Site,
@@ -184,6 +184,21 @@ def create_site(
     background_tasks.add_task(capture_screenshot, instance.id)
 
     return instance
+
+
+@app.delete("/sites/{site_id}", status_code=204)
+def delete_site(session: SessionDep, site_id: int):
+    query = sqlmodel.select(Site).where(Site.id == site_id)
+    site = session.exec(query).one_or_none()
+    if not site:
+        raise fastapi.HTTPException(status_code=404, detail="Site not found")
+
+    # Delete associated health checks first
+    session.exec(sqlmodel.delete(HealthCheck).where(HealthCheck.site_id == site_id))
+
+    # Delete the site
+    session.delete(site)
+    session.commit()
 
 
 @app.get("/sites/{site_id}/healthchecks")
@@ -235,8 +250,8 @@ async def create_drift():
         current_max_storage = instance.get("MaxAllocatedStorage", current_storage)
         instance_arn = instance["DBInstanceArn"]
 
-        # Increment max allocated storage by 1 GB
-        new_max_storage = current_max_storage + 1
+        # Increment max allocated storage by 10% (AWS requires at least 10% increase)
+        new_max_storage = int(current_max_storage * 1.1)
         rds_client.modify_db_instance(
             DBInstanceIdentifier=instance_id,
             MaxAllocatedStorage=new_max_storage,

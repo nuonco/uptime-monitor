@@ -139,6 +139,20 @@
                 color: #666;
                 padding: 40px;
             }
+            .delete-btn {
+                background: #ef4444;
+                padding: 5px 10px;
+                font-size: 12px;
+                margin-left: 0;
+            }
+            .delete-btn:hover {
+                background: #dc2626;
+            }
+            .site-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
         </style>
     </head>
     <body>
@@ -217,8 +231,11 @@
                         <div class="site">
                             ${screenshot}
                             <div class="site-content">
-                                <div class="site-url">
-                                    <h3>${site.url}</h3>
+                                <div class="site-header">
+                                    <div class="site-url">
+                                        <h3>${site.url}</h3>
+                                    </div>
+                                    <button class="delete-btn" onclick="deleteSite(${site.id}, '${site.url}')">Delete</button>
                                 </div>
                                 <div class="checks-container">
                                     <div class="checks">${bars || '<div style="color: #999;">Waiting for first check...</div>'}</div>
@@ -263,6 +280,21 @@
                         alert("Error adding site");
                     }
                 });
+
+            async function deleteSite(id, url) {
+                if (!confirm(`Delete ${url}?`)) {
+                    return;
+                }
+                try {
+                    await fetch(`${API_URL}/sites/${id}`, {
+                        method: "DELETE",
+                    });
+                    loadSites();
+                } catch (error) {
+                    console.error("Error deleting site:", error);
+                    alert("Error deleting site");
+                }
+            }
 
             // Load sites on page load
             loadSites();
