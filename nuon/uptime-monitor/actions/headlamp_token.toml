@@ -15,21 +15,9 @@ inline_contents = """
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[headlamp-token] creating service account"
-kubectl create serviceaccount headlamp-admin -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
-
-echo "[headlamp-token] creating cluster role binding"
-kubectl create clusterrolebinding headlamp-admin \
-  --clusterrole=cluster-admin \
-  --serviceaccount="$NAMESPACE":headlamp-admin \
-  --dry-run=client -o yaml | kubectl apply -f -
-
 echo "[headlamp-token] generating token"
-TOKEN=$(kubectl create token headlamp-admin -n "$NAMESPACE" --duration=8760h)
-
-echo "[headlamp-token] writing output"
+TOKEN=$(kubectl create token headlamp -n "$NAMESPACE" --duration=8760h)
 printf '{"token": "%s"}' "$TOKEN" >> $NUON_ACTIONS_OUTPUT_FILEPATH
-
 echo "[headlamp-token] done"
 """
 
