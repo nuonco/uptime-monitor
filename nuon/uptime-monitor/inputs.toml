@@ -13,3 +13,4 @@ group        = "monitoring"
 default      = "5"
 required     = false
 type         = "number"
+user_configurable = true
