@@ -1,0 +1,57 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=action
+name    = "flush_healthchecks"
+timeout = "5m"
+
+[[triggers]]
+type          = "cron"
+cron_schedule = "0 * * * *"
+
+[[triggers]]
+type = "manual"
+
+[[steps]]
+name = "flush"
+inline_contents = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[flush-healthchecks] reading db credentials from secret"
+DB_HOST=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data.host}' | base64 -d)
+DB_PORT=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data.port}' | base64 -d)
+DB_NAME=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data.database}' | base64 -d)
+DB_USER=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data.username}' | base64 -d)
+DB_PASS=$(kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data.password}' | base64 -d)
+
+POD_NAME="flush-healthchecks-$(date +%s)"
+
+echo "[flush-healthchecks] creating temporary postgres client pod"
+kubectl run "$POD_NAME" \
+  --namespace="$NAMESPACE" \
+  --image=postgres:18-alpine \
+  --restart=Never \
+  --env="PGPASSWORD=$DB_PASS" \
+  --env="PGHOST=$DB_HOST" \
+  --env="PGPORT=$DB_PORT" \
+  --env="PGUSER=$DB_USER" \
+  --env="PGDATABASE=$DB_NAME" \
+  --command -- sleep 300
+
+echo "[flush-healthchecks] waiting for pod to be ready"
+kubectl wait --namespace="$NAMESPACE" --for=condition=Ready pod/"$POD_NAME" --timeout=60s
+
+cleanup() {
+  echo "[flush-healthchecks] cleaning up temporary pod"
+  kubectl delete pod "$POD_NAME" --namespace="$NAMESPACE" --ignore-not-found=true
+}
+trap cleanup EXIT
+
+echo "[flush-healthchecks] deleting healthchecks older than 24h"
+kubectl exec -n "$NAMESPACE" "$POD_NAME" -- psql -c \
+  "DELETE FROM healthcheck WHERE created_at < NOW() - INTERVAL '24 hours';"
+
+echo "[flush-healthchecks] done"
+"""
+
+[steps.env_vars]
+SECRET_NAME = "db-credentials"
+NAMESPACE   = "default"
