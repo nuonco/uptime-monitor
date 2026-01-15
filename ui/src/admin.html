@@ -219,15 +219,7 @@
 
                         if (result.status === "success") {
                             status.className = "status-message success";
-                            status.innerHTML = `
-                                <strong>✓ Drift Created Successfully</strong><br>
-                                Instance: ${result.instance_id}<br>
-                                <br>
-                                <strong>Changes:</strong><br>
-                                ${result.changes.map((c) => `• ${c}`).join("<br>")}
-                                <br><br>
-                                Check the Nuon dashboard to see drift detection.
-                            `;
+                            status.innerHTML = `<strong>✓ ${result.message}</strong>`;
                         } else {
                             status.className = "status-message error";
                             status.innerHTML = `
