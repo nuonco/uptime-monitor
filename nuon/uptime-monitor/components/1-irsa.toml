@@ -1,0 +1,16 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=terraform
+name              = "irsa"
+type              = "terraform_module"
+terraform_version = "1.14.3"
+dependencies      = ["s3", "rds"]
+
+[public_repo]
+repo      = "nuonco/uptime-monitor"
+directory = "nuon/uptime-monitor/components/1-irsa"
+branch    = "main"
+
+[vars]
+region                = "{{ .nuon.install_stack.outputs.region }}"
+install_id            = "{{ .nuon.install.id }}"
+cluster_oidc_provider = "{{ .nuon.install.sandbox.outputs.cluster.oidc_provider }}"
+s3_bucket_arn         = "{{ .nuon.components.s3.outputs.bucket_arn }}"

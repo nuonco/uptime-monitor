@@ -9,6 +9,5 @@ directory = "nuon/uptime-monitor/components/1-s3"
 branch    = "main"
 
 [vars]
-region                = "{{ .nuon.install_stack.outputs.region }}"
-install_id            = "{{ .nuon.install.id }}"
-cluster_oidc_provider = "{{ .nuon.install.sandbox.outputs.cluster.oidc_provider }}"
+region     = "{{ .nuon.install_stack.outputs.region }}"
+install_id = "{{ .nuon.install.id }}"
