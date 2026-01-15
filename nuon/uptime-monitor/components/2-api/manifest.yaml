@@ -55,7 +55,7 @@ spec:
                   name: db-credentials
                   key: password
             - name: CHECK_INTERVAL
-              value: "5"
+              value: "{{ .nuon.install.inputs.healthcheck_interval_seconds }}"
             - name: AWS_REGION
               value: "{{ .nuon.install_stack.outputs.region }}"
             - name: S3_BUCKET_NAME

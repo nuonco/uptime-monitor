@@ -1,0 +1,15 @@
+#:schema https://api.nuon.co/v1/general/config-schema?type=inputs
+
+[[group]]
+name         = "monitoring"
+description  = "Configure monitoring settings"
+display_name = "Monitoring"
+
+[[input]]
+name         = "healthcheck_interval_seconds"
+description  = "How often to check site uptime (in seconds)"
+display_name = "Healthcheck Interval (seconds)"
+group        = "monitoring"
+default      = "5"
+required     = false
+type         = "number"
