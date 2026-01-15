@@ -251,7 +251,7 @@ async def create_drift():
         instance_arn = instance["DBInstanceArn"]
 
         # Increment max allocated storage by 10% (AWS requires at least 10% increase)
-        new_max_storage = int(current_max_storage * 1.1)
+        new_max_storage = int(current_max_storage * 1.2)
         rds_client.modify_db_instance(
             DBInstanceIdentifier=instance_id,
             MaxAllocatedStorage=new_max_storage,
