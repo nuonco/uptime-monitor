@@ -197,7 +197,7 @@
 
                     if (
                         !confirm(
-                            "This will modify the RDS instance to create infrastructure drift.\n\nChanges:\n- Increment MaxAllocatedStorage by 1 GB\n- Add drift test tags\n\nContinue?",
+                            "This will modify the RDS instance to create infrastructure drift.\n\nChanges:\n- Increment MaxAllocatedStorage\n- Add AWS tags\n\nContinue?",
                         )
                     ) {
                         return;
