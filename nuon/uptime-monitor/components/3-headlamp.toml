@@ -66,6 +66,15 @@ branch    = "main"
 
 
 # -----------------------------------------------------------------------------
+# DRIFT DETECTION
+# -----------------------------------------------------------------------------
+# Detect when Headlamp Helm release has been modified outside of Nuon.
+# Useful for the drift demo - manually change Helm values or scale the
+# deployment, then trigger a drift scan to see Nuon detect the changes.
+drift_schedule = "*/10 * * * *"  # Every 10 minutes
+
+
+# -----------------------------------------------------------------------------
 # HELM VALUES
 # -----------------------------------------------------------------------------
 # Inline values passed to the chart. Keys use dot notation for nested values.
