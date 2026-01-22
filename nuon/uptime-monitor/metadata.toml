@@ -26,7 +26,7 @@
 #   "v1" - Legacy format
 #   "v2" - Current format (recommended)
 #
-version = "v1"
+version = "v2"
 
 
 # Human-readable application name displayed in the Nuon Dashboard and Installer.
