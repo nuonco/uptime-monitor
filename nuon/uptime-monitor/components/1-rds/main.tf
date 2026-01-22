@@ -1,3 +1,23 @@
+# -----------------------------------------------------------------------------
+# RDS PostgreSQL for Uptime Monitor
+# -----------------------------------------------------------------------------
+#
+# Variables are passed from the Nuon component config (1-rds.toml):
+#   - var.region                 <- {{.nuon.install_stack.outputs.region}}
+#   - var.install_id             <- {{.nuon.install.id}}
+#   - var.vpc_id                 <- {{.nuon.install.sandbox.outputs.vpc.id}}
+#   - var.private_subnet_ids     <- {{.nuon.install.sandbox.outputs.vpc.private_subnet_ids}}
+#   - var.node_security_group_id <- {{.nuon.install.sandbox.outputs.cluster.node_security_group_id}}
+#
+# Outputs are available to other components via:
+#   {{.nuon.components.rds.outputs.db_host}}
+#   {{.nuon.components.rds.outputs.db_port}}
+#   {{.nuon.components.rds.outputs.db_name}}
+#   {{.nuon.components.rds.outputs.db_username}}
+#   {{.nuon.components.rds.outputs.master_user_secret_arn}}
+#
+# -----------------------------------------------------------------------------
+
 terraform {
   required_providers {
     aws = {
@@ -10,6 +30,7 @@ terraform {
 provider "aws" {
   region = var.region
 
+  # Nuon tagging convention for resource tracking
   default_tags {
     tags = {
       "install.nuon.co/id"     = var.install_id
@@ -18,6 +39,7 @@ provider "aws" {
   }
 }
 
+# Variables passed from Nuon component config
 variable "region" {
   type = string
 }
@@ -26,19 +48,22 @@ variable "install_id" {
   type = string
 }
 
+# From sandbox outputs: {{.nuon.install.sandbox.outputs.vpc.id}}
 variable "vpc_id" {
   type        = string
-  description = "VPC ID from the sandbox stack"
+  description = "VPC ID from the sandbox"
 }
 
+# From sandbox outputs: {{.nuon.install.sandbox.outputs.vpc.private_subnet_ids}}
 variable "private_subnet_ids" {
   type        = string
-  description = "Comma-delimited string of private subnet IDs from the sandbox stack"
+  description = "Comma-delimited string of private subnet IDs from the sandbox"
 }
 
+# From sandbox outputs: {{.nuon.install.sandbox.outputs.cluster.node_security_group_id}}
 variable "node_security_group_id" {
   type        = string
-  description = "EKS node security group ID from the sandbox stack"
+  description = "EKS node security group ID from the sandbox"
 }
 
 # Get VPC CIDR block
@@ -105,7 +130,7 @@ resource "aws_db_instance" "postgres" {
   }
 }
 
-# Outputs
+# Outputs - referenced by other Nuon components and actions
 output "db_host" {
   value       = aws_db_instance.postgres.address
   description = "PostgreSQL database host"

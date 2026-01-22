@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+# S3 Bucket for Uptime Monitor
+# -----------------------------------------------------------------------------
+#
+# Variables are passed from the Nuon component config (1-s3.toml):
+#   - var.region     <- {{.nuon.install_stack.outputs.region}}
+#   - var.install_id <- {{.nuon.install.id}}
+#
+# Outputs are available to other components via:
+#   {{.nuon.components.s3.outputs.bucket_name}}
+#   {{.nuon.components.s3.outputs.bucket_arn}}
+#
+# -----------------------------------------------------------------------------
+
 terraform {
   required_providers {
     aws = {
@@ -10,6 +24,7 @@ terraform {
 provider "aws" {
   region = var.region
 
+  # Nuon tagging convention for resource tracking
   default_tags {
     tags = {
       "install.nuon.co/id"     = var.install_id
@@ -18,6 +33,7 @@ provider "aws" {
   }
 }
 
+# Variables passed from Nuon component config
 variable "region" {
   type = string
 }
@@ -35,7 +51,7 @@ resource "aws_s3_bucket" "main" {
   bucket = local.bucket_name
 }
 
-# Outputs
+# Outputs - referenced by other Nuon components
 output "bucket_name" {
   value       = aws_s3_bucket.main.bucket
   description = "S3 bucket name"

@@ -1,3 +1,20 @@
+# -----------------------------------------------------------------------------
+# IRSA (IAM Roles for Service Accounts) for Uptime Monitor
+# -----------------------------------------------------------------------------
+#
+# Variables are passed from the Nuon component config (1-irsa.toml):
+#   - var.region                <- {{.nuon.install_stack.outputs.region}}
+#   - var.install_id            <- {{.nuon.install.id}}
+#   - var.cluster_oidc_provider <- {{.nuon.install.sandbox.outputs.cluster.oidc_provider}}
+#   - var.s3_bucket_arn         <- {{.nuon.components.s3.outputs.bucket_arn}}
+#
+# Outputs are available to other components via:
+#   {{.nuon.components.irsa.outputs.role_arn}}
+#
+# This role is referenced in the API manifest's ServiceAccount annotation.
+#
+# -----------------------------------------------------------------------------
+
 terraform {
   required_providers {
     aws = {
@@ -10,6 +27,7 @@ terraform {
 provider "aws" {
   region = var.region
 
+  # Nuon tagging convention for resource tracking
   default_tags {
     tags = {
       "install.nuon.co/id"     = var.install_id
@@ -18,6 +36,7 @@ provider "aws" {
   }
 }
 
+# Variables passed from Nuon component config
 variable "region" {
   type = string
 }
@@ -26,11 +45,13 @@ variable "install_id" {
   type = string
 }
 
+# From sandbox outputs: {{.nuon.install.sandbox.outputs.cluster.oidc_provider}}
 variable "cluster_oidc_provider" {
   type        = string
   description = "EKS cluster OIDC provider for IRSA"
 }
 
+# From s3 component outputs: {{.nuon.components.s3.outputs.bucket_arn}}
 variable "s3_bucket_arn" {
   type        = string
   description = "ARN of the S3 bucket to grant access to"
@@ -112,7 +133,7 @@ resource "aws_iam_role" "api" {
   }
 }
 
-# Outputs
+# Outputs - referenced by other Nuon components
 output "role_arn" {
   value       = aws_iam_role.api.arn
   description = "IAM role ARN for the API service account"

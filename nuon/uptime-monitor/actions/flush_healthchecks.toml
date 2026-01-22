@@ -1,6 +1,34 @@
-#:schema https://api.nuon.co/v1/general/config-schema?type=action
+# =============================================================================
+# NUON ACTION - Flush Healthchecks
+# =============================================================================
+#
+# Deletes healthcheck records older than 24 hours from the database.
+# Runs hourly on a cron schedule to prevent unbounded data growth.
+#
+# Schema: https://api.nuon.co/v1/general/config-schema?type=action
+#
+# -----------------------------------------------------------------------------
+# CRON TRIGGERS
+# -----------------------------------------------------------------------------
+#
+# Actions can run on a schedule using standard cron syntax:
+#   "* * * * *"     = every minute
+#   "0 * * * *"     = every hour (at minute 0)
+#   "0 0 * * *"     = daily at midnight
+#   "0 0 * * 0"     = weekly on Sunday
+#   "*/5 * * * *"   = every 5 minutes
+#
+# =============================================================================
+
+
 name    = "flush_healthchecks"
 timeout = "5m"
+
+
+# -----------------------------------------------------------------------------
+# TRIGGERS
+# -----------------------------------------------------------------------------
+# Runs every hour, or manually from dashboard.
 
 [[triggers]]
 type          = "cron"
@@ -9,10 +37,21 @@ cron_schedule = "0 * * * *"
 [[triggers]]
 type = "manual"
 
+
+# -----------------------------------------------------------------------------
+# STEPS
+# -----------------------------------------------------------------------------
+
 [[steps]]
 name = "flush"
+
+# Creates a temporary postgres pod to run the DELETE query.
+# Reads database credentials from the Kubernetes secret created by rds_creds action.
 inline_contents = """
 #!/usr/bin/env bash
+# Deletes healthcheck records older than 24 hours.
+# Uses a temporary postgres pod to execute SQL against RDS.
+# Database credentials are read from Kubernetes secret (created by rds_creds action).
 set -euo pipefail
 
 echo "[flush-healthchecks] reading db credentials from secret"

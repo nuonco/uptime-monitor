@@ -1,3 +1,14 @@
+# -----------------------------------------------------------------------------
+# UI Deployment for Uptime Monitor
+# -----------------------------------------------------------------------------
+#
+# Nuon template variables used in this manifest:
+#
+#   Container Image (from docker_build component):
+#     {{ .nuon.components.ui_image.outputs.image.repository }}
+#     {{ .nuon.components.ui_image.outputs.image.tag }}
+#
+# -----------------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +26,7 @@ spec:
     spec:
       containers:
         - name: ui
+          # Image built by Nuon docker_build component (0-ui-image.toml)
           image: "{{ .nuon.components.ui_image.outputs.image.repository }}:{{ .nuon.components.ui_image.outputs.image.tag }}"
           imagePullPolicy: Always
           ports:
